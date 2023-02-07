@@ -1,0 +1,24 @@
+{
+  "name": "pr-discord-notif",
+  "version": "1.0.0",
+  "description": "Simple script that listens for a new pull request from a github webhook and sends a message to a Discord text channel",
+  "main": "index.js",
+  "author": "Michael Zhao",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "btoa": "^1.2.1",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.17.1",
+    "node-fetch": "^3.3.0"
+  },
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.33.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5"
+  }
+}
