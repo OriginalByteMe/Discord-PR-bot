@@ -36,14 +36,14 @@ if (
 
 // ? This is an object to assign colours to each embed depending on what repo it's from
 const repoList = {
-	[process.env.ANNOTATOR_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.BOLT_REPO] : { colour: '#00FF00', PRs: [] },
+	[process.env.ANNOTATOR_REPO] : { colour: '#FF0000', PRs: [] },
+	[process.env.BOLT_REPO] : { colour: '#0000FF', PRs: [] },
 	[process.env.DATA_PIPE_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.PROJECTS_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.PAYMENT_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.KAYA_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.ADMIN_REPO] : { colour: '#00FF00', PRs: [] },
-	[process.env.PLAYGROUND_REPO] : { colour: '#00FF00', PRs: [] },
+	[process.env.PROJECTS_REPO] : { colour: '#33FFF9', PRs: [] },
+	[process.env.PAYMENT_REPO] : { colour: '#FFA833', PRs: [] },
+	[process.env.KAYA_REPO] : { colour: '#DA33FF', PRs: [] },
+	[process.env.ADMIN_REPO] : { colour: '#9333FF', PRs: [] },
+	[process.env.PLAYGROUND_REPO] : { colour: '#E0FF33', PRs: [] },
 };
 
 // Discord bot must collect all messages from channel, presume all messages are embeds
@@ -59,26 +59,30 @@ const repoList = {
 // // 	});
 // // };
 
+// TODO: Function to check if message is already present in the chat, if so don't upload another one
+const checkIfPresent = async (channel, prURL) => {
+	await channel.messages.fetch({ limit: 100 }).then((messages) => {
+		messages.forEach((message) => {
+			if (message.embeds.length === 0) {
+				return false;
+			}
+			if (message.embeds[0].url === prURL) {
+				return true;
+			}
+		});
+	});
+	return false;
+};
 
 // TODO: Modify this, to accept the repo name as well, to assign colours to it
-const createEmbed = (repo, pr, channel) => {
-	// const commits = await fetch(pr.commits_url, {
-	// 	method: 'GET',
-	// 	headers: {
-	// 		Authorization: `Basic ${btoa(
-	// 			`${process.env.GH_USER}:${process.env.GH_AUTH}`,
-	// 		)}`,
-	// 	},
-	// }).then((data) => data.json());
+const createEmbed = async (repo, pr, channel) => {
 
+	if (await checkIfPresent(channel, pr.html_url)) {
+		return;
+	}
 
-	// const commits = await octokit.request(`GET ${pr.commits_url}`, {
-	// 	owner: 'supahands',
-	// 	repo: 'saas-data-pipeline-service',
-	// 	state: 'all',
-	// });
 	const Embed = new EmbedBuilder()
-		.setColor('#00CD2D')
+		.setColor(repoList[repo].colour)
 		.setTitle(`${pr.number}: ${pr.title}`)
 		.setURL(pr.html_url)
 		.setAuthor({ name: pr.user.login, iconURL: null, url: pr.user.html_url })
@@ -88,9 +92,9 @@ const createEmbed = (repo, pr, channel) => {
 			value: `${repo}`,
 		})
 		.setDescription(
-			`Merge ${pr.commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` @Engineering`,
+			`Merge ${pr.commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` @everyone`,
 		);
-	channel.send({ embeds: Embed });
+	channel.send({ embeds: [Embed] });
 };
 
 // TODO: Search through all messages, compare embed url with arguement URL, then delete message if it's the same
@@ -112,8 +116,6 @@ TODO:
 const updateEmbed = async (channel, action, state, prURL) => {
 	channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.forEach(async (message) => {
-
-
 			// TODO: Switch statement for different message types, reaction for each different type
 			if (message.embeds[0].url === prURL) {
 
@@ -137,67 +139,23 @@ const updateEmbed = async (channel, action, state, prURL) => {
 };
 
 
-const getRepoDataFor = async (repo) => {
-	switch (repo) {
-	case process.env.ANNOTATOR_REPO:
-		repoList[process.env.ANNOTATOR_REPO].PRs = await octokit.request(`GET /repos/${process.env.ANNOTATOR_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.ANNOTATOR_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.BOLT_REPO:
-		repoList[process.env.BOLT_REPO].PRs = await octokit.request(`GET /repos/${process.env.BOLT_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.BOLT_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.DATA_PIPE_REPO:
-		repoList[process.env.DATA_PIPE_REPO].PRs = await octokit.request(`GET /repos/${process.env.DATA_PIPE_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.DATA_PIPE_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.PROJECTS_REPO:
-		repoList[process.env.PROJECTS_REPO].PRs = await octokit.request(`GET /repos/${process.env.PROJECTS_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.PROJECTS_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.PAYMENT_REPO:
-		repoList[process.env.PAYMENT_REPO].PRs = await octokit.request(`GET /repos/${process.env.PAYMENT_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.PAYMENT_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.KAYA_REPO:
-		repoList[process.env.KAYA_REPO].PRs = await octokit.request(`GET /repos/${process.env.KAYA_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.KAYA_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.ADMIN_REPO:
-		repoList[process.env.ADMIN_REPO].PRs = await octokit.request(`GET /repos/${process.env.ADMIN_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.ADMIN_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	case process.env.PLAYGROUND_REPO:
-		repoList[process.env.PLAYGROUND_REPO].PRs = await octokit.request(`GET /repos/${process.env.PLAYGROUND_REPO}/pulls`, {
-			owner: 'supahands',
-			repo: process.env.PLAYGROUND_REPO.slice('/'),
-			state: 'opened',
-		});
-		break;
-	default:
-		console.error(`Invalid repo name: ${repo}`);
-		break;
+const getAllPRs = async () => {
+	for (const repo in repoList) {
+		const childObject = repoList[repo];
+		const repoName = repo.slice('/');
+		console.log('fetching repo: ', repo);
+
+		try {
+			const { data } = await octokit.request(`GET /repos/${repo}/pulls`, {
+				owner: 'supahands',
+				repo: repoName.slice('/'),
+				state: 'opened',
+			});
+			childObject.PRs = data;
+		}
+		catch (error) {
+			console.error(`Error fetching PRs for ${repo}: ${error.message}`);
+		}
 	}
 };
 /*
@@ -209,15 +167,30 @@ TODO: Look through messages in channel and update accordingly
 
 */
 const updateChannel = async (channel, repo) => {
-	await getRepoDataFor(repo);
+	const chatEmbeds = [];
+	// await getRepoDataFor(repo);
+	await getAllPRs();
+
+	const channelMessages = await channel.messages.fetch({ limit: 100 });
+	for (const message of channelMessages) {
+		if (message[1].embeds.length === 0) {
+			break;
+		}
+		chatEmbeds.push(message[1].embeds[0]);
+	}
+
 	await channel.messages.fetch({ limit: 100 }).then((messages) => {
-		messages.forEach(async (message) => {
+		messages.every(async (message) => {
+			if (message.embeds.length === 0) {
+				return false;
+			}
 			const messageEmbed = message.embeds[0];
 			const prNum = messageEmbed.data.title.split(':');
 
 			// ? - If the message is not an embed, delete it
 			if (message.embeds === 0) {
 				message.delete();
+				return;
 			}
 			// ? - If the PR attached to an embed is closed, delete the message
 			const prInfo = await fetch(
@@ -233,73 +206,25 @@ const updateChannel = async (channel, repo) => {
 			).then((data) => data.json());
 			if (prInfo.state === 'closed') {
 				message.delete();
+				return;
 			}
-			// ? - If the PR is open and does not match any of the channel emebds url, create new embed and add to channel
-
-
 		});
 	});
 
+	// ? - Check through all PR's of each repo to see if any are not displayed atm
+	for (const repoItem in repoList) {
+		const repoData = repoList[repoItem];
+		const prs = repoData.PRs;
+
+		// ? - If the PR is open and does not match any of the channel emebds url, create new embed and add to channel
+		for (const pr of prs) {
+			const prInChat = chatEmbeds.find(embed => embed.data.url === pr.html_url);
+			if (prInChat === undefined) {
+				await createEmbed(repoItem, pr, channel);
+			}
+		}
+	}
 };
-
-
-// const createEmbedList = async (channel, newPR) => {
-// 	// TODO: Check through all PR's of given repo and compare them with the list of PRs in the channel
-
-// 	// TODO: Create an embed for any PRs that are not in the channel
-
-// 	// TODO: If there are no new PR's to make, return (?) (Technically should not be getting here)
-
-// 	let embeds = [];
-// 	const chatEmbeds = [];
-// 	const requestedEmbed = await createEmbed(newPR);
-// 	const requestedClosed = await newPR.state === 'closed';
-// 	const allPRs = await octokit.request(`GET /repos/${process.env.REPO}/pulls`, {
-// 		owner: 'supahands',
-// 		repo: 'saas-data-pipeline-service',
-// 		state: 'opened',
-// 	});
-
-// 	deleteAllMessages(channel);
-
-// 	await channel.messages.fetch({ limit: 100 }).then((messages) => {
-// 		messages.forEach(async (message) => {
-// 			const embed = message.embeds[0];
-// 			const prNum = embed.data.title.split(':');
-// 			const prInfo = await fetch(
-// 				`https://api.github.com/repos/${process.env.REPO}/pulls/${prNum}`,
-// 				{
-// 					method: 'GET',
-// 					headers: {
-// 						Authorization: `Basic ${btoa(
-// 							`${process.env.GH_USER}:${process.env.GH_AUTH}`,
-// 						)}`,
-// 					},
-// 				},
-// 			).then((data) => data.json());
-// 			if (prInfo.state === 'closed') {
-// 				message.delete();
-// 			}
-// 			else {
-// 				chatEmbeds.push(embed);
-// 			}
-// 		});
-// 	});
-
-// 	for (const pr of allPRs.data) {
-// 		if (pr.number === newPR.number) {
-// 			embeds.push(requestedEmbed);
-// 		}
-// 		const newEmbed = await createEmbed(pr);
-// 		embeds.push(newEmbed);
-// 	}
-// 	// Remove a the requestedEmbed from the list if requestedClosed is true
-
-// 	// Remove all items from embeds array that are also in the chatEmbeds array
-// 	embeds = embeds.filter(embed => !chatEmbeds.includes(embed));
-
-// 	return embeds;
-// };
 
 
 app.post('/', async (req, res) => {
@@ -345,38 +270,21 @@ app.post('/', async (req, res) => {
 	// >
 
 	if (action === 'opened') {
-		createEmbed(repoName, pr, channel);
+		await createEmbed(repoName, pr, channel);
 		updateChannel(channel);
+		res.status(200).send('Updated and uploaded');
 	}
 	else if (action === 'closed' || action === 'converted_to_draft') {
 		deleteMessage(channel, pr.html_url);
+		res.status(200).send('Deleted');
 	}
 	else if (action === 'submitted') {
 		updateEmbed(channel, action);
+		res.status(200).send('Updated');
 	}
 	else {
 		res.status(400).send('Unsupported action, please check that you spelt the action correctly: ' + action);
 	}
-	// if (req.body.repository.full_name != process.env.ANNOTATOR_REPO) {
-	// 	res.status(400);
-	// 	res.send({ status: 400, error: 'Invalid repo' });
-	// 	return;
-	// }
-
-	// const embeds = createEmbedList(channel, pr);
-	// if (action === 'closed') {
-	// 	res.status(200);
-	// 	res.send({ status: 200 });
-	// 	return;
-	// }
-	// if ((await embeds).length === 0) {
-	// 	res.status(400);
-	// 	res.send({ status: 400, error: 'No embeds found' });
-	// }
-	// else {
-	// 	channel.send({ embeds: await embeds });
-	// 	res.send({ status: 200, embeds: await embeds });
-	// }
 });
 
 // ? - Specify port for server to listen on
