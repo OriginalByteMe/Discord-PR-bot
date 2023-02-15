@@ -66,7 +66,9 @@ const checkIfPresent = async (channel, prURL) => {
 			if (message.embeds.length === 0) {
 				return false;
 			}
-			if (message.embeds[0].url === prURL) {
+			// console.log('embed url: ', message.embeds[0].data.url);
+			// console.log('pr url: ', prURL);
+			if (message.embeds[0].data.url === prURL) {
 				return true;
 			}
 		});
@@ -184,14 +186,15 @@ const updateChannel = async (channel, repo) => {
 			if (message.embeds.length === 0) {
 				return false;
 			}
-			const messageEmbed = message.embeds[0];
-			const prNum = messageEmbed.data.title.split(':');
 
 			// ? - If the message is not an embed, delete it
 			if (message.embeds === 0) {
 				message.delete();
 				return;
 			}
+			const messageEmbed = message.embeds[0];
+			const prNum = messageEmbed.data.title.split(':')[0];
+
 			// ? - If the PR attached to an embed is closed, delete the message
 			const prInfo = await fetch(
 				`https://api.github.com/repos/${repo}/pulls/${prNum}`,
@@ -271,7 +274,7 @@ app.post('/', async (req, res) => {
 
 	if (action === 'opened') {
 		await createEmbed(repoName, pr, channel);
-		updateChannel(channel);
+		await updateChannel(channel, repoName);
 		res.status(200).send('Updated and uploaded');
 	}
 	else if (action === 'closed' || action === 'converted_to_draft') {
