@@ -46,20 +46,8 @@ const repoList = {
 	[process.env.PLAYGROUND_REPO] : { colour: '#E0FF33', PRs: [], amplify: false },
 };
 
-// Discord bot must collect all messages from channel, presume all messages are embeds
-// Do a fetch request on the URL component of each embed, in the response if the status is 'closed', remove from the list of embeds
-// Return list of embeds
 
-// ! function created to delete all messages and reset, not sure where to use this yet
-// // const deleteAllMessages = async (channel) => {
-// // 	channel.messages.fetch({ limit: 100 }).then((messages) => {
-// // 		messages.forEach(async (message) => {
-// // 			message.delete();
-// // 		});
-// // 	});
-// // };
-
-// TODO: Function to check if message is already present in the chat, if so don't upload another one
+// ?-  Function to check if message is already present in the chat, if so don't upload another one
 const checkIfPresent = async (channel, prURL) => {
 	await channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.forEach((message) => {
@@ -93,7 +81,7 @@ const getAmplify = async (repo, prNum, prRewviewURL) => {
 
 	return amplifyLink;
 };
-// TODO: Modify this, to accept the repo name as well, to assign colours to it
+// ? - Modify this, to accept the repo name as well, to assign colours to it
 const createEmbed = async (repo, pr, channel) => {
 
 	if (await checkIfPresent(channel, pr.html_url)) {
@@ -142,7 +130,7 @@ const createEmbed = async (repo, pr, channel) => {
 	}
 };
 
-// TODO: Search through all messages, compare embed url with arguement URL, then delete message if it's the same
+// ? - Search through all messages, compare embed url with arguement URL, then delete message if it's the same
 const deleteMessage = async (channel, prURL) => {
 	channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.forEach(async (message) => {
@@ -152,16 +140,12 @@ const deleteMessage = async (channel, prURL) => {
 		});
 	});
 };
-/*
-TODO:
-  - Add argument for update type (listed in main app function)
-  ? - Have switch statement for update type
-*/
 
+// ? - Updates all the reactions on the embeds
 const updateEmbed = async (channel, state, prURL) => {
 	channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.forEach(async (message) => {
-			// TODO: Switch statement for different message types, reaction for each different type
+			// ? - Switch statement for different message types, reaction for each different type
 			if (message.embeds[0].url === prURL) {
 				console.log('Review left for', prURL, ': ', state);
 
@@ -187,7 +171,7 @@ const updateEmbed = async (channel, state, prURL) => {
 	});
 };
 
-
+// ? - Retrieves all PR data from each specified repo
 const getAllPRs = async () => {
 	for (const repo in repoList) {
 		const childObject = repoList[repo];
