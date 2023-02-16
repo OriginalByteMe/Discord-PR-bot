@@ -295,13 +295,20 @@ app.post('/', async (req, res) => {
 		res.status(200).send('Updated and uploaded');
 	}
 	else if (action === 'closed' || action === 'converted_to_draft') {
-		deleteMessage(channel, pr.html_url);
+		await deleteMessage(channel, pr.html_url);
 		res.status(200).send('Deleted');
 	}
+	// ? - Updating review
 	else if (action === 'submitted') {
-		const reviewState = req.body.review.state;
-		updateEmbed(channel, action, reviewState, pr.html_url);
-		res.status(200).send('Updated');
+		const reviewState = req.body.review.state.toUpperCase();
+		await updateEmbed(channel, reviewState, pr.html_url);
+		res.status(200).send(`Reacted: ${reviewState}`);
+	}
+	// ? - Updating comments
+	else if (action === 'created') {
+		const state = 'COMMENTED';
+		await updateEmbed(channel, state, pr.html_url);
+		res.status(200).send('Commented');
 	}
 	else {
 		res.status(400).send('Unsupported action, please check that you spelt the action correctly: ' + action);
