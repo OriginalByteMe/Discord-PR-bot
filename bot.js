@@ -66,8 +66,6 @@ const checkIfPresent = async (channel, prURL) => {
 			if (message.embeds.length === 0) {
 				return false;
 			}
-			// console.log('embed url: ', message.embeds[0].data.url);
-			// console.log('pr url: ', prURL);
 			if (message.embeds[0].data.url === prURL) {
 				return true;
 			}
@@ -115,26 +113,30 @@ TODO:
   ? - Have switch statement for update type
 */
 
-const updateEmbed = async (channel, action, state, prURL) => {
+const updateEmbed = async (channel, state, prURL) => {
 	channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.forEach(async (message) => {
 			// TODO: Switch statement for different message types, reaction for each different type
 			if (message.embeds[0].url === prURL) {
+				console.log('Review left for', prURL, ': ', state);
 
 				// ? - if action === submitted
-				if (action === 'submitted') {
-					switch (state) {
-					case 'approved':
-						message.react('✅');
-						break;
-					case 'changes_requested':
-						message.react('❌');
-						break;
+
+				switch (state) {
+				case 'APPROVED':
+					await message.react('✅');
+					break;
+				case 'CHANGES_REQUESTED':
+					await message.react('❌');
+					break;
+				case 'COMMENTED':
+					await message.react('💬');
+					break;
 					// ! Haven't found a way to remove a specific reaction only once from a message, only remove all (https://discordjs.guide/popular-topics/reactions.html#removing-reactions)
-					case 'dismissed':
-						break;
-					}
+				case 'dismissed':
+					break;
 				}
+
 			}
 		});
 	});
@@ -170,7 +172,8 @@ TODO: Look through messages in channel and update accordingly
 */
 const updateChannel = async (channel) => {
 	const chatEmbeds = [];
-	// await getRepoDataFor(repo);
+
+	// ? - Update all repo objects with PR data
 	await getAllPRs();
 
 
@@ -188,6 +191,7 @@ const updateChannel = async (channel) => {
 			const messageEmbed = message.embeds[0];
 			const prNum = messageEmbed.data.title.split(':')[0];
 			const repo = messageEmbed.data.fields[0].value;
+			const prURL = messageEmbed.data.url;
 
 			// ? - If the PR attached to an embed is closed, delete the message
 			const prInfo = await fetch(
@@ -203,6 +207,19 @@ const updateChannel = async (channel) => {
 			).then((data) => data.json());
 			if (prInfo.state === 'closed') {
 				message.delete();
+				return;
+			}
+
+			// ? - Update the reactions on the messages
+			const reviews = await octokit.request(`GET /repos/${repo}/pulls/${prNum}/reviews`, {
+				owner: 'Supahands',
+				repo: repo.slice('/')[1],
+				pull_number: prNum,
+			});
+
+			for (const review of reviews.data) {
+				const { state } = review;
+				updateEmbed(channel, state, prURL);
 			}
 		});
 	});
@@ -282,7 +299,8 @@ app.post('/', async (req, res) => {
 		res.status(200).send('Deleted');
 	}
 	else if (action === 'submitted') {
-		updateEmbed(channel, action);
+		const reviewState = req.body.review.state;
+		updateEmbed(channel, action, reviewState, pr.html_url);
 		res.status(200).send('Updated');
 	}
 	else {
