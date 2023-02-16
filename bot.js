@@ -168,18 +168,11 @@ TODO: Look through messages in channel and update accordingly
  ? - If the PR attached to an embed is closed, delete the message
 
 */
-const updateChannel = async (channel, repo) => {
+const updateChannel = async (channel) => {
 	const chatEmbeds = [];
 	// await getRepoDataFor(repo);
 	await getAllPRs();
 
-	const channelMessages = await channel.messages.fetch({ limit: 100 });
-	for (const message of channelMessages) {
-		if (message[1].embeds.length === 0) {
-			break;
-		}
-		chatEmbeds.push(message[1].embeds[0]);
-	}
 
 	await channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.every(async (message) => {
@@ -194,6 +187,7 @@ const updateChannel = async (channel, repo) => {
 			}
 			const messageEmbed = message.embeds[0];
 			const prNum = messageEmbed.data.title.split(':')[0];
+			const repo = messageEmbed.data.fields[0].value;
 
 			// ? - If the PR attached to an embed is closed, delete the message
 			const prInfo = await fetch(
@@ -209,11 +203,17 @@ const updateChannel = async (channel, repo) => {
 			).then((data) => data.json());
 			if (prInfo.state === 'closed') {
 				message.delete();
-				return;
 			}
 		});
 	});
 
+	const channelMessages = await channel.messages.fetch({ limit: 100 });
+	for (const message of channelMessages) {
+		if (message[1].embeds.length === 0) {
+			break;
+		}
+		chatEmbeds.push(message[1].embeds[0]);
+	}
 	// ? - Check through all PR's of each repo to see if any are not displayed atm
 	for (const repoItem in repoList) {
 		const repoData = repoList[repoItem];
@@ -274,7 +274,7 @@ app.post('/', async (req, res) => {
 
 	if (action === 'opened') {
 		await createEmbed(repoName, pr, channel);
-		await updateChannel(channel, repoName);
+		updateChannel(channel, repoName);
 		res.status(200).send('Updated and uploaded');
 	}
 	else if (action === 'closed' || action === 'converted_to_draft') {
