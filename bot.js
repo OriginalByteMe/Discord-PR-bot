@@ -205,7 +205,28 @@ const updateChannel = async (channel) => {
 	// ? - Update all repo objects with PR data
 	await getAllPRs();
 
+	const channelMessages = await channel.messages.fetch({ limit: 100 });
+	for (const message of channelMessages) {
+		if (message[1].embeds.length === 0) {
+			break;
+		}
+		chatEmbeds.push(message[1].embeds[0]);
+	}
+	// ? - Check through all PR's of each repo to see if any are not displayed atm
+	for (const repoItem in repoList) {
+		const repoData = repoList[repoItem];
+		const prs = repoData.PRs;
 
+		// ? - If the PR is open and does not match any of the channel emebds url, create new embed and add to channel
+		for (const pr of prs) {
+			const prInChat = chatEmbeds.find(embed => embed.data.url === pr.html_url);
+			if (prInChat === undefined && pr.draft === false) {
+				await createEmbed(repoItem, pr, channel);
+			}
+		}
+	}
+
+	// ? - Go through channel and delete all irrelevant messages
 	await channel.messages.fetch({ limit: 100 }).then((messages) => {
 		messages.every(async (message) => {
 			if (message.embeds.length === 0) {
@@ -248,31 +269,10 @@ const updateChannel = async (channel) => {
 
 			for (const review of reviews.data) {
 				const { state } = review;
-				updateEmbed(channel, state, prURL);
+				await updateEmbed(channel, state, prURL);
 			}
 		});
 	});
-
-	const channelMessages = await channel.messages.fetch({ limit: 100 });
-	for (const message of channelMessages) {
-		if (message[1].embeds.length === 0) {
-			break;
-		}
-		chatEmbeds.push(message[1].embeds[0]);
-	}
-	// ? - Check through all PR's of each repo to see if any are not displayed atm
-	for (const repoItem in repoList) {
-		const repoData = repoList[repoItem];
-		const prs = repoData.PRs;
-
-		// ? - If the PR is open and does not match any of the channel emebds url, create new embed and add to channel
-		for (const pr of prs) {
-			const prInChat = chatEmbeds.find(embed => embed.data.url === pr.html_url);
-			if (prInChat === undefined && pr.draft === false) {
-				await createEmbed(repoItem, pr, channel);
-			}
-		}
-	}
 };
 
 
