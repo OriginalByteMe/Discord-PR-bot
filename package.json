@@ -1,9 +1,9 @@
 {
-  "name": "pr-discord-notif",
+  "name": "Discord-pr-puller",
   "version": "1.0.0",
-  "description": "Simple script that listens for a new pull request from a github webhook and sends a message to a Discord text channel",
-  "main": "index.js",
-  "author": "Michael Zhao",
+  "description": "A script that gathers data from select github repositories and sends it to Discord",
+  "main": "bot.js",
+  "author": "Noah Rijkaard",
   "license": "MIT",
   "private": true,
   "dependencies": {
