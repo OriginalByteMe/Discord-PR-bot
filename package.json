@@ -11,11 +11,13 @@
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
-    "node-fetch": "^3.3.0",
-    "octokit": "^2.0.14"
+    "modclean": "^3.0.0-beta.1",
+    "octokit": "^2.0.14",
+    "serverless-http": "^3.1.1"
   },
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "build": "npm install --omit=dev"
   },
   "devDependencies": {
     "eslint": "^8.33.0",
