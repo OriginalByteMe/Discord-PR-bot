@@ -4,6 +4,7 @@ const btoa = require('btoa');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const express = require('express');
 const app = express();
+const serverless = require('serverless-http');
 require('dotenv').config();
 
 app.use(express.json());
@@ -277,6 +278,10 @@ const updateChannel = async (channel) => {
 
 
 app.post('/', async (req, res) => {
+	if(req.body.repository === undefined){
+		res.status(400).send('No repository specified');
+		return
+	}
 	const channel = client.channels.cache.get(process.env.CHANNEL_ID);
 	const repoName = req.body.repository.full_name;
 	const action = req.body.action;
@@ -340,14 +345,20 @@ app.post('/', async (req, res) => {
 		res.status(200).send('Commented');
 	}
 	else {
-		res.status(400).send('Unsupported action, please check that you spelt the action correctly: ' + action);
+		res.status(200).send('Recieved but not accepted, action is not currently supported.');
 	}
 });
 
+if (process.env.ENVIRONMENT === 'production') {
+	exports.handler = serverless(app);
+}
+else {
+	app.listen(process.env.PORT || 3000, () => {
+		console.log(`Listening on port ${process.env.PORT || 3000}`);
+	});
+}
 // ? - Specify port for server to listen on
-app.listen(process.env.PORT || 3000, () => {
-	console.log(`Listening on port ${process.env.PORT || 3000}`);
-});
+
 // ? - Listen for when bot is connected to Discord (i.e. logged in)
 client.on('ready', () => {
 	console.log(
