@@ -278,7 +278,7 @@ const updateChannel = async (channel) => {
 
 
 app.post('/', async (req, res) => {
-	if (req.body.repository.full_name === undefined) {
+	if (req.repository.full_name === undefined) {
 		res.status(400).send('No repository specified');
 		return;
 	}
