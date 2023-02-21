@@ -278,9 +278,9 @@ const updateChannel = async (channel) => {
 
 
 app.post('/', async (req, res) => {
-	if(req.body.repository === undefined){
+	if (req.body.repository.full_name === undefined) {
 		res.status(400).send('No repository specified');
-		return
+		return;
 	}
 	const channel = client.channels.cache.get(process.env.CHANNEL_ID);
 	const repoName = req.body.repository.full_name;
