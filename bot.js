@@ -277,10 +277,21 @@ const updateChannel = async (channel) => {
 
 
 app.post('/', async (req, res) => {
-	const channel = client.channels.cache.get(process.env.CHANNEL_ID);
-	const repoName = req.body.repository.full_name;
-	const action = req.body.action;
-	const pr = req.body.pull_request;
+	let channel = '';
+	let repoName = '';
+	let action = '';
+	let pr = '';
+	try {
+		channel = client.channels.cache.get(process.env.CHANNEL_ID);
+		repoName = req.body.repository.full_name;
+		action = req.body.action;
+		pr = req.body.pull_request;
+	}
+	catch (error) {
+		console.log('Error:', error);
+		res.status(400).send(error);
+		return;
+	}
 
 	// ! Check for invalid repo
 	if (repoList[repoName] === undefined) {
