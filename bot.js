@@ -124,7 +124,7 @@ const createEmbed = async (repo, pr, channel) => {
 				value: `${repo}`,
 			})
 			.setDescription(
-				`Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` @everyone`,
+				`Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` <@&795488563038912523>`,
 			);
 		channel.send({ embeds: [Embed] });
 	}
