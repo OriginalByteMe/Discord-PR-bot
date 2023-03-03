@@ -107,7 +107,7 @@ const createEmbed = async (repo, pr, channel) => {
 				value: `${await amplifyFieldData}`,
 			})
 			.setDescription(
-				`${await amplifyFieldData === '\`PR Link:\` ' ? `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` ` : `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` <@795488563038912523> <@877389011965063168> <@169346852364222464>`}`,
+				`${await amplifyFieldData === '\`PR Link:\` ' ? `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` ` : `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` <@&795488563038912523> <@877389011965063168> <@169346852364222464>`}`,
 			);
 		channel.send({ embeds: [Embed] });
 	}
