@@ -75,7 +75,7 @@ const getAmplify = async (repo, prNum, prRewviewURL) => {
 			console.log('PR LINK:', response.body.match(regex)[0]);
 			amplifyLink += await response.body.match(regex)[0];
 			amplifyLink += `\n\n \`Test link to login first with:\` ${prRewviewURL}/`;
-			amplifyLink += '\n\n@Zi Wei @geethekthek';
+			amplifyLink += '\n\n<@795488563038912523> <@877389011965063168> <@169346852364222464>';
 		}
 	}
 
@@ -107,7 +107,7 @@ const createEmbed = async (repo, pr, channel) => {
 				value: `${await amplifyFieldData}`,
 			})
 			.setDescription(
-				`Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` @everyone`,
+				`${await amplifyFieldData === '\`PR Link:\` ' ? `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` ` : `Merge ${commits} commits into \`${pr.base.ref}\` from \`${pr.head.ref}\` <@795488563038912523> <@877389011965063168> <@169346852364222464>`}`,
 			);
 		channel.send({ embeds: [Embed] });
 	}
@@ -148,13 +148,37 @@ const updateEmbed = async (channel, state, prURL) => {
 			// ? - Switch statement for different message types, reaction for each different type
 			if (message.embeds[0].url === prURL) {
 				console.log('Review left for', prURL, ': ', state);
-
+				const approve1Reaction = '<:approve1:1081046953212776528>';
+				const approve2Reaction = '<:approve2:1081047016039252018>';
+				const messageReactions = [];
+				message.reactions.cache.forEach(async (reaction) => {
+					messageReactions.push(await reaction.emoji.name);
+				});
 				// ? - if action === submitted
-
+				console.log('Reactions for current message:', await messageReactions);
 				switch (state) {
 				case 'APPROVED':
-					await message.react('✅');
-					break;
+					try {
+						if (await messageReactions.includes('approve1') && await messageReactions.includes('approve2')) {
+							console.log('APPROVED');
+							break;
+						}
+						if (await !messageReactions.includes('approve1')) {
+							console.log('Adding approve1 reaction');
+							await message.react(approve1Reaction);
+							break;
+						}
+						if (await messageReactions.includes('approve1')) {
+							console.log('Approve 2 reaction');
+							await message.react(approve2Reaction);
+							break;
+						}
+						break;
+					}
+					catch (error) {
+						console.log(error);
+						break;
+					}
 				case 'CHANGES_REQUESTED':
 					await message.react('❌');
 					break;
