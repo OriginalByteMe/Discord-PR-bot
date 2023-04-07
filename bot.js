@@ -44,6 +44,8 @@ const repoList = {
 	[process.env.PROJECTS_REPO] : { colour: '#33FFF9', PRs: [], amplify: false },
 	[process.env.PAYMENT_REPO] : { colour: '#FFA833', PRs: [], amplify: false },
 	[process.env.PLAYGROUND_REPO] : { colour: '#E0FF33', PRs: [], amplify: false },
+	[process.env.PROFILES_REPO] : { colour: '#33FF33', PRs: [], amplify: false },
+
 };
 
 
