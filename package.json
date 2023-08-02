@@ -1,5 +1,5 @@
 {
-  "name": "Discord-pr-puller",
+  "name": "discord-pr-bot",
   "version": "1.0.0",
   "description": "A script that gathers data from select github repositories and sends it to Discord",
   "main": "bot.js",

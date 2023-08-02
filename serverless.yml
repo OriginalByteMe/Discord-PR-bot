@@ -1,0 +1,21 @@
+service: discord-pr-bot
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: ap-southeast-1
+
+package:
+ patterns:
+   - '!.terraform/**'
+   - '!.serverless/**'
+   - '!exclude-me-dir/**'
+   - bot.js
+   - node_modules/**
+
+functions:
+  Discord-PR-Bot:
+    handler: handler.bot
